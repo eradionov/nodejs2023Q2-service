@@ -1,15 +1,15 @@
 {
   "name": "home-library",
   "version": "0.0.1",
-  "description": "",
-  "author": "",
+  "description": "NestJS Rest API service",
+  "author": "Yauheni Radzivonau",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "start": "nest start",
+    "start": "nest start -w",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
