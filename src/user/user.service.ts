@@ -1,19 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import {EntityExistsException} from "../exception/entity_exists";
-import {User} from "./entities/user.entity";
-import {EntityNotExistsException} from "../exception/entity_not_exists";
-import {AccessDeniedException} from "../exception/access_denied";
-import {UserRepository} from "./repository/user.repository";
+import { EntityExistsException } from '../exception/entity_exists';
+import { User } from './entities/user.entity';
+import { EntityNotExistsException } from '../exception/entity_not_exists';
+import { AccessDeniedException } from '../exception/access_denied';
+import { UserRepository } from './repository/user.repository';
 
 @Injectable()
 export class UserService {
-  constructor(private userRepository: UserRepository) {
-  }
+  constructor(private readonly userRepository: UserRepository) {}
 
   create(createUserDto: CreateUserDto) {
-    if (undefined !== this.userRepository.findUserByName(createUserDto.login)) {
+    if (undefined !== this.userRepository.findOneByName(createUserDto.login)) {
       throw new EntityExistsException(createUserDto.login);
     }
 
@@ -25,15 +24,15 @@ export class UserService {
   }
 
   findAll() {
-    return this.userRepository.getAllUsers();
+    return this.userRepository.findAll();
   }
 
   findOne(id: string) {
-    return this.userRepository.findUserById(id);
+    return this.userRepository.findOneById(id);
   }
 
   update(id: string, updateUserDto: UpdateUserDto) {
-    const user = this.userRepository.findUserById(id);
+    const user = this.userRepository.findOneById(id);
 
     if (undefined === user) {
       throw new EntityNotExistsException(id);

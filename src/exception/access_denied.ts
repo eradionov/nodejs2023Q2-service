@@ -1,3 +1,1 @@
-export class AccessDeniedException extends Error {
-
-}
+export class AccessDeniedException extends Error {}
