@@ -1,15 +1,24 @@
 import {v4 as uuidv4} from 'uuid';
-import {Exclude} from "class-transformer";
+import {Exclude, Expose} from "class-transformer";
 import {UpdateUserDto} from "../dto/update-user.dto";
 
 export class User {
+    @Expose({ name: 'id' })
     private _id: string;
+
+    @Expose({ name: 'login' })
     private _login: string;
 
     @Exclude()
     private _password: string;
+
+    @Expose({ name: 'version' })
     private _version: number;
+
+    @Expose({ name: 'createdAt' })
     private _createdAt: number;
+
+    @Expose({ name: 'updatedAt' })
     private _updatedAt: number;
 
     private constructor(login: string, password: string) {
@@ -24,6 +33,7 @@ export class User {
     update(dto: UpdateUserDto) {
         this._version++;
         this._password = dto.newPassword;
+        this._updatedAt = new Date().getTime();
 
         return this;
     }

@@ -5,6 +5,6 @@ import {MinLength} from "class-validator";
 export class UpdateUserDto {
     public readonly oldPassword: string;
 
-    @MinLength(8)
+    @MinLength(4)
     public readonly newPassword: string;
 }
