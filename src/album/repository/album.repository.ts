@@ -13,25 +13,25 @@ export class AlbumRepository extends AbstractRepository<Album> {
     return <Album | undefined>AbstractRepository.albums.find((album) => album.id === id);
   }
 
-  // findBy(query: Record<string, any>): Album[] {
-  //   if (undefined === query['id'] && undefined === query['artistId']) {
-  //     return [];
-  //   }
-  //
-  //   return <Album[]>this.albums.find((album) => {
-  //     let isMatch = null;
-  //
-  //     if (undefined !== query['id']) {
-  //       isMatch = album.id === query['id'];
-  //     }
-  //
-  //     if (undefined !== query['artistId']) {
-  //       isMatch = (isMatch === null || isMatch === true) && album.artistId === query['artistId'];
-  //     }
-  //
-  //     return !!isMatch;
-  //   });
-  // }
+  findBy(query: Record<string, any>): Album[] {
+    if (undefined === query?.id && undefined === query?.artistId) {
+      return [];
+    }
+
+    return <Album[]> AbstractRepository.albums.filter((album) => {
+      let isMatch = null;
+
+      if (undefined !== query?.id) {
+        isMatch = album.id === query.id;
+      }
+
+      if (undefined !== query?.artistId) {
+        isMatch = (isMatch === null || isMatch === true) && album.artistId === query.artistId;
+      }
+
+      return !!isMatch;
+    });
+  }
 
   findAll(): Album[] {
     return AbstractRepository.albums;
