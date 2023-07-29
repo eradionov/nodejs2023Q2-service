@@ -100,7 +100,7 @@ export class UserController {
         throw new NotFoundException();
       }
 
-      throw error;
+      throw new InternalServerErrorException();
     }
   }
 }
