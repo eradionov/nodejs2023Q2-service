@@ -12,6 +12,8 @@ git clone {repository URL}
 ```
 
 ## Installing NPM modules
+- Copy env.example to .env
+- To see api documentation [Swagger documentation](http://localhost:4000/doc) - port is defined in .env
 
 ```
 npm install
