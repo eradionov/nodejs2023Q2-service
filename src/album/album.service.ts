@@ -7,6 +7,7 @@ import { EntityNotExistsException } from '../exception/entity_not_exists';
 import { Album } from './entities/album.entity';
 import { UpdateTrackDto } from '../track/dto/update-track.dto';
 import { FavoriteRepository } from '../favorite/repository/favorite.repository';
+import { TrackRepository } from '../track/repository/track.repository';
 
 @Injectable()
 export class AlbumService {

@@ -1,15 +1,19 @@
 import { Expose } from 'class-transformer';
 import { v4 as uuidv4 } from 'uuid';
 import { UpdateArtistDto } from '../dto/update-artist.dto';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class Artist {
   @Expose({ name: 'id' })
+  @ApiProperty({ name: 'id' })
   private _id: string;
 
   @Expose({ name: 'name' })
+  @ApiProperty({ name: 'name' })
   private _name: string;
 
   @Expose({ name: 'grammy' })
+  @ApiProperty({ name: 'grammy' })
   private _grammy: boolean;
 
   private constructor(name: string, grammy: boolean) {

@@ -1,21 +1,27 @@
 import { Expose } from 'class-transformer';
 import { v4 as uuidv4 } from 'uuid';
 import { UpdateTrackDto } from '../dto/update-track.dto';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class Track {
   @Expose({ name: 'id' })
+  @ApiProperty({ name: 'id' })
   private _id: string;
 
   @Expose({ name: 'name' })
+  @ApiProperty({ name: 'name' })
   private _name: string;
 
   @Expose({ name: 'artistId' })
+  @ApiProperty({ name: 'artistId' })
   private _artistId: string | null;
 
   @Expose({ name: 'albumId' })
+  @ApiProperty({ name: 'albumId' })
   private _albumId: string | null;
 
   @Expose({ name: 'duration' })
+  @ApiProperty({ name: 'duration' })
   private _duration: number;
 
   private constructor(

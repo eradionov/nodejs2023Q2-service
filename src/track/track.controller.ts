@@ -4,6 +4,7 @@ import { UpdateTrackDto } from './dto/update-track.dto';
 import { EntityNotExistsException } from '../exception/entity_not_exists';
 import { AccessDeniedException } from '../exception/access_denied';
 import {
+  BadRequestException,
   Body,
   ClassSerializerInterceptor,
   Controller,
@@ -20,14 +21,23 @@ import {
   Put,
   UseInterceptors,
 } from '@nestjs/common';
+import { EntityExistsException } from '../exception/entity_exists';
+import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Track } from './entities/track.entity';
 
 @Controller('track')
+@ApiTags('Track')
 export class TrackController {
   constructor(private readonly trackService: TrackService) {}
 
   @Post()
   @UseInterceptors(ClassSerializerInterceptor)
   @HttpCode(HttpStatus.CREATED)
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    type: Track,
+  })
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Bad Request.' })
   create(@Body() createTrackDto: CreateTrackDto) {
     try {
       return this.trackService.create(createTrackDto);
@@ -43,6 +53,11 @@ export class TrackController {
   @Get()
   @HttpCode(HttpStatus.OK)
   @UseInterceptors(ClassSerializerInterceptor)
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: Track,
+    isArray: true,
+  })
   findAll() {
     return this.trackService.findAll();
   }
@@ -50,6 +65,12 @@ export class TrackController {
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @UseInterceptors(ClassSerializerInterceptor)
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: Track,
+  })
+  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found.' })
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Bad Request.' })
   findOne(@Param('id', ParseUUIDPipe) id: string) {
     const track = this.trackService.findOne(id);
 
@@ -63,6 +84,16 @@ export class TrackController {
   @Put(':id')
   @UseInterceptors(ClassSerializerInterceptor)
   @HttpCode(HttpStatus.OK)
+  @ApiBody({
+    type: CreateTrackDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: Track,
+  })
+  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found.' })
+  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: 'Forbidden.' })
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Bad Request.' })
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateTrackDto: UpdateTrackDto,
@@ -84,6 +115,8 @@ export class TrackController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found.' })
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Bad Request.' })
   remove(@Param('id', ParseUUIDPipe) id: string) {
     try {
       this.trackService.remove(id);

@@ -22,14 +22,22 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { EntityExistsException } from '../exception/entity_exists';
 import { EntityNotExistsException } from '../exception/entity_not_exists';
 import { AccessDeniedException } from '../exception/access_denied';
+import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { User } from './entities/user.entity';
 
 @Controller('user')
+@ApiTags('User')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post()
   @UseInterceptors(ClassSerializerInterceptor)
   @HttpCode(HttpStatus.CREATED)
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    type: User,
+  })
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Bad Request.' })
   create(@Body() createUserDto: CreateUserDto) {
     try {
       return this.userService.create(createUserDto);
@@ -45,6 +53,11 @@ export class UserController {
   @Get()
   @HttpCode(HttpStatus.OK)
   @UseInterceptors(ClassSerializerInterceptor)
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: User,
+    isArray: true,
+  })
   findAll() {
     return this.userService.findAll();
   }
@@ -52,6 +65,12 @@ export class UserController {
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @UseInterceptors(ClassSerializerInterceptor)
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: User,
+  })
+  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found.' })
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Bad Request.' })
   findOne(@Param('id', ParseUUIDPipe) id: string) {
     const user = this.userService.findOne(id);
 
@@ -65,6 +84,15 @@ export class UserController {
   @Put(':id')
   @UseInterceptors(ClassSerializerInterceptor)
   @HttpCode(HttpStatus.OK)
+  @ApiBody({
+    type: UpdateUserDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: User,
+  })
+  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found.' })
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Bad Request.' })
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateUserDto: UpdateUserDto,
@@ -86,6 +114,8 @@ export class UserController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found.' })
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Bad Request.' })
   remove(@Param('id', ParseUUIDPipe) id: string) {
     try {
       this.userService.remove(id);

@@ -1,18 +1,23 @@
 import { v4 as uuidv4 } from 'uuid';
 import { Expose } from 'class-transformer';
 import { UpdateAlbumDto } from '../dto/update-album.dto';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class Album {
   @Expose({ name: 'id' })
+  @ApiProperty({ name: 'id' })
   private _id: string;
 
   @Expose({ name: 'name' })
+  @ApiProperty({ name: 'name' })
   private _name: string;
 
   @Expose({ name: 'year' })
+  @ApiProperty({ name: 'year' })
   private _year: number;
 
   @Expose({ name: 'artistId' })
+  @ApiProperty({ name: 'artistId' })
   private _artistId: string | null;
 
   private constructor(

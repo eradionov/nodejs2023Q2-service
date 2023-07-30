@@ -4,7 +4,6 @@ import { UpdateArtistDto } from './dto/update-artist.dto';
 import { ArtistRepository } from './repository/artist.repository';
 import { Artist } from './entities/artist.entity';
 import { EntityNotExistsException } from '../exception/entity_not_exists';
-import { AccessDeniedException } from '../exception/access_denied';
 import { AlbumRepository } from '../album/repository/album.repository';
 import { TrackRepository } from '../track/repository/track.repository';
 import { UpdateTrackDto } from '../track/dto/update-track.dto';
@@ -40,10 +39,6 @@ export class ArtistService {
 
     if (undefined === artist) {
       throw new EntityNotExistsException(id);
-    }
-
-    if (artist.name !== updateArtistDto.name) {
-      throw new AccessDeniedException();
     }
 
     return artist.update(updateArtistDto);

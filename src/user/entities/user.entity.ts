@@ -1,24 +1,30 @@
 import { v4 as uuidv4 } from 'uuid';
 import { Exclude, Expose } from 'class-transformer';
 import { UpdateUserDto } from '../dto/update-user.dto';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class User {
   @Expose({ name: 'id' })
+  @ApiProperty({ name: 'id' })
   private _id: string;
 
   @Expose({ name: 'login' })
+  @ApiProperty({ name: 'login' })
   private _login: string;
 
   @Exclude()
   private _password: string;
 
   @Expose({ name: 'version' })
+  @ApiProperty({ name: 'version' })
   private _version: number;
 
   @Expose({ name: 'createdAt' })
+  @ApiProperty({ name: 'createdAt' })
   private _createdAt: number;
 
   @Expose({ name: 'updatedAt' })
+  @ApiProperty({ name: 'updatedAt' })
   private _updatedAt: number;
 
   private constructor(login: string, password: string) {
