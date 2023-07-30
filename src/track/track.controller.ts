@@ -1,22 +1,25 @@
 import { TrackService } from './track.service';
 import { CreateTrackDto } from './dto/create-track.dto';
 import { UpdateTrackDto } from './dto/update-track.dto';
-import {EntityExistsException} from "../exception/entity_exists";
-import {EntityNotExistsException} from "../exception/entity_not_exists";
-import {AccessDeniedException} from "../exception/access_denied";
+import { EntityNotExistsException } from '../exception/entity_not_exists';
+import { AccessDeniedException } from '../exception/access_denied';
 import {
-  BadRequestException,
-  Body, ClassSerializerInterceptor,
+  Body,
+  ClassSerializerInterceptor,
   Controller,
-  Delete, ForbiddenException, Get,
+  Delete,
+  ForbiddenException,
+  Get,
   HttpCode,
-  HttpStatus, InternalServerErrorException, NotFoundException,
+  HttpStatus,
+  InternalServerErrorException,
+  NotFoundException,
   Param,
   ParseUUIDPipe,
   Post,
   Put,
-  UseInterceptors
-} from "@nestjs/common";
+  UseInterceptors,
+} from '@nestjs/common';
 
 @Controller('track')
 export class TrackController {
@@ -26,15 +29,15 @@ export class TrackController {
   @UseInterceptors(ClassSerializerInterceptor)
   @HttpCode(HttpStatus.CREATED)
   create(@Body() createTrackDto: CreateTrackDto) {
-    // try {
+    try {
       return this.trackService.create(createTrackDto);
-    // } catch (error) {
-    //   if (error instanceof EntityExistsException) {
-    //     throw new BadRequestException(error);
-    //   }
-    //
-    //   throw new InternalServerErrorException();
-    // }
+    } catch (error) {
+      if (error instanceof EntityExistsException) {
+        throw new BadRequestException(error);
+      }
+
+      throw new InternalServerErrorException();
+    }
   }
 
   @Get()
@@ -60,7 +63,10 @@ export class TrackController {
   @Put(':id')
   @UseInterceptors(ClassSerializerInterceptor)
   @HttpCode(HttpStatus.OK)
-  update(@Param('id', ParseUUIDPipe) id: string, @Body() updateTrackDto: UpdateTrackDto) {
+  update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() updateTrackDto: UpdateTrackDto,
+  ) {
     try {
       return this.trackService.update(id, updateTrackDto);
     } catch (error) {
@@ -86,7 +92,7 @@ export class TrackController {
         throw new NotFoundException();
       }
 
-      throw error;
+      throw new InternalServerErrorException();
     }
   }
 }

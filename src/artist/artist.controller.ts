@@ -3,7 +3,6 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
   Delete,
   UseInterceptors,
@@ -11,14 +10,18 @@ import {
   HttpCode,
   HttpStatus,
   BadRequestException,
-  InternalServerErrorException, ParseUUIDPipe, NotFoundException, Put, ForbiddenException,
+  InternalServerErrorException,
+  ParseUUIDPipe,
+  NotFoundException,
+  Put,
+  ForbiddenException,
 } from '@nestjs/common';
 import { ArtistService } from './artist.service';
 import { CreateArtistDto } from './dto/create-artist.dto';
 import { UpdateArtistDto } from './dto/update-artist.dto';
-import {EntityExistsException} from "../exception/entity_exists";
-import {EntityNotExistsException} from "../exception/entity_not_exists";
-import {AccessDeniedException} from "../exception/access_denied";
+import { EntityExistsException } from '../exception/entity_exists';
+import { EntityNotExistsException } from '../exception/entity_not_exists';
+import { AccessDeniedException } from '../exception/access_denied';
 
 @Controller('artist')
 export class ArtistController {
@@ -62,7 +65,10 @@ export class ArtistController {
   @Put(':id')
   @UseInterceptors(ClassSerializerInterceptor)
   @HttpCode(HttpStatus.OK)
-  update(@Param('id', ParseUUIDPipe) id: string, @Body() updateArtistDto: UpdateArtistDto) {
+  update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() updateArtistDto: UpdateArtistDto,
+  ) {
     try {
       return this.artistService.update(id, updateArtistDto);
     } catch (error) {
@@ -88,7 +94,7 @@ export class ArtistController {
         throw new NotFoundException();
       }
 
-      throw error;
+      throw new InternalServerErrorException();
     }
   }
 }

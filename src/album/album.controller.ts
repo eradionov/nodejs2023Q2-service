@@ -3,7 +3,6 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
   Delete,
   UseInterceptors,
@@ -14,14 +13,15 @@ import {
   Put,
   NotFoundException,
   InternalServerErrorException,
-  ForbiddenException, BadRequestException
+  ForbiddenException,
+  BadRequestException,
 } from '@nestjs/common';
 import { AlbumService } from './album.service';
 import { CreateAlbumDto } from './dto/create-album.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
-import {EntityNotExistsException} from "../exception/entity_not_exists";
-import {AccessDeniedException} from "../exception/access_denied";
-import {EntityExistsException} from "../exception/entity_exists";
+import { EntityNotExistsException } from '../exception/entity_not_exists';
+import { AccessDeniedException } from '../exception/access_denied';
+import { EntityExistsException } from '../exception/entity_exists';
 
 @Controller('album')
 export class AlbumController {
@@ -65,7 +65,10 @@ export class AlbumController {
   @Put(':id')
   @UseInterceptors(ClassSerializerInterceptor)
   @HttpCode(HttpStatus.OK)
-  update(@Param('id', ParseUUIDPipe) id: string, @Body() updateAlbumDto: UpdateAlbumDto) {
+  update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() updateAlbumDto: UpdateAlbumDto,
+  ) {
     try {
       return this.albumService.update(id, updateAlbumDto);
     } catch (error) {

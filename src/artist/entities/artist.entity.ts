@@ -1,7 +1,6 @@
 import { Expose } from 'class-transformer';
-import {v4 as uuidv4} from "uuid";
-import {UpdateUserDto} from "../../user/dto/update-user.dto";
-import {UpdateArtistDto} from "../dto/update-artist.dto";
+import { v4 as uuidv4 } from 'uuid';
+import { UpdateArtistDto } from '../dto/update-artist.dto';
 
 export class Artist {
   @Expose({ name: 'id' })

@@ -7,23 +7,19 @@ import {
   ForbiddenException,
   Get,
   HttpCode,
-  HttpException,
-  HttpStatus, InternalServerErrorException,
-  NotAcceptableException,
+  HttpStatus,
+  InternalServerErrorException,
   NotFoundException,
   Param,
   ParseUUIDPipe,
-  Patch,
   Post,
   Put,
-  Res,
   UseInterceptors,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { EntityExistsException } from '../exception/entity_exists';
-import { Response } from 'express';
 import { EntityNotExistsException } from '../exception/entity_not_exists';
 import { AccessDeniedException } from '../exception/access_denied';
 
@@ -34,9 +30,7 @@ export class UserController {
   @Post()
   @UseInterceptors(ClassSerializerInterceptor)
   @HttpCode(HttpStatus.CREATED)
-  create(
-    @Body() createUserDto: CreateUserDto
-  ) {
+  create(@Body() createUserDto: CreateUserDto) {
     try {
       return this.userService.create(createUserDto);
     } catch (error) {

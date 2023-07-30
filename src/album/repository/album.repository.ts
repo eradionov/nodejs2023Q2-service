@@ -1,16 +1,21 @@
 import { AbstractRepository } from '../../repository/abstract.repository';
 import { Injectable } from '@nestjs/common';
 import { EntityNotExistsException } from '../../exception/entity_not_exists';
-import {Album} from "../entities/album.entity";
+import { Album } from '../entities/album.entity';
+import { UpdateAlbumDto } from '../dto/update-album.dto';
 
 @Injectable()
 export class AlbumRepository extends AbstractRepository<Album> {
   findOneByName(name: string): Album | undefined {
-    return <Album | undefined>AbstractRepository.albums.find((album) => album.name === name);
+    return <Album | undefined>(
+      AbstractRepository.albums.find((album) => album.name === name)
+    );
   }
 
   findOneById(id: string): Album | undefined {
-    return <Album | undefined>AbstractRepository.albums.find((album) => album.id === id);
+    return <Album | undefined>(
+      AbstractRepository.albums.find((album) => album.id === id)
+    );
   }
 
   findBy(query: Record<string, any>): Album[] {
@@ -18,7 +23,7 @@ export class AlbumRepository extends AbstractRepository<Album> {
       return [];
     }
 
-    return <Album[]> AbstractRepository.albums.filter((album) => {
+    return <Album[]>AbstractRepository.albums.filter((album) => {
       let isMatch = null;
 
       if (undefined !== query?.id) {
@@ -26,7 +31,9 @@ export class AlbumRepository extends AbstractRepository<Album> {
       }
 
       if (undefined !== query?.artistId) {
-        isMatch = (isMatch === null || isMatch === true) && album.artistId === query.artistId;
+        isMatch =
+          (isMatch === null || isMatch === true) &&
+          album.artistId === query.artistId;
       }
 
       return !!isMatch;
@@ -46,12 +53,35 @@ export class AlbumRepository extends AbstractRepository<Album> {
   }
 
   remove(id: string) {
-    const albumIndex = AbstractRepository.albums.findIndex((album) => album.id === id);
+    const albumIndex = AbstractRepository.albums.findIndex(
+      (album) => album.id === id,
+    );
 
     if (albumIndex === -1) {
       throw new EntityNotExistsException(id);
     }
 
-    AbstractRepository.albums = AbstractRepository.albums.filter((album) => album.id !== id);
+    AbstractRepository.albums = AbstractRepository.albums.filter(
+      (album) => album.id !== id,
+    );
+  }
+
+  updateWhere(where: UpdateAlbumDto, updateWith: UpdateAlbumDto) {
+    AbstractRepository.albums.forEach((track, index) => {
+      let allMatch = undefined;
+
+      for (const key of Object.keys(where)) {
+        if (
+          (allMatch === undefined || allMatch === true) &&
+          AbstractRepository.albums[index][key] === where[key]
+        ) {
+          allMatch = true;
+        }
+      }
+
+      if (allMatch) {
+        AbstractRepository.albums[index].update(updateWith);
+      }
+    });
   }
 }

@@ -1,20 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { CreateTrackDto } from './dto/create-track.dto';
 import { UpdateTrackDto } from './dto/update-track.dto';
-import {TrackRepository} from "./repository/track.repository";
-import {AlbumRepository} from "../album/repository/album.repository";
-import {EntityNotExistsException} from "../exception/entity_not_exists";
-import {AccessDeniedException} from "../exception/access_denied";
-import {Album} from "../album/entities/album.entity";
-import {Track} from "./entities/track.entity";
+import { TrackRepository } from './repository/track.repository';
+import { AlbumRepository } from '../album/repository/album.repository';
+import { EntityNotExistsException } from '../exception/entity_not_exists';
+import { Track } from './entities/track.entity';
+import { FavoriteRepository } from '../favorite/repository/favorite.repository';
 
 @Injectable()
 export class TrackService {
   constructor(
-      private readonly trackRepository: TrackRepository,
-      private readonly albumRepository: AlbumRepository
-  ) {
-  }
+    private readonly trackRepository: TrackRepository,
+    private readonly albumRepository: AlbumRepository,
+    private readonly favoritsRepository: FavoriteRepository,
+  ) {}
   create(createTrackDto: CreateTrackDto) {
     const trackQuery: Record<string, any> = {};
 
@@ -27,13 +26,18 @@ export class TrackService {
     }
 
     if (
-        null !== createTrackDto.albumId
-        && undefined === this.albumRepository.findBy(trackQuery)
+      null !== createTrackDto.albumId &&
+      undefined === this.albumRepository.findBy(trackQuery)
     ) {
       throw new EntityNotExistsException(createTrackDto.albumId);
     }
 
-    const track = Track.create(createTrackDto.name, createTrackDto.duration, createTrackDto.artistId, createTrackDto.albumId);
+    const track = Track.create(
+      createTrackDto.name,
+      createTrackDto.duration,
+      createTrackDto.artistId,
+      createTrackDto.albumId,
+    );
 
     this.trackRepository.save(track);
 
@@ -65,8 +69,8 @@ export class TrackService {
     }
 
     if (
-        null !== updateTrackDto.albumId
-        && undefined === this.albumRepository.findBy(trackQuery)
+      null !== updateTrackDto.albumId &&
+      undefined === this.albumRepository.findBy(trackQuery)
     ) {
       throw new EntityNotExistsException(updateTrackDto.artistId);
     }
@@ -75,6 +79,7 @@ export class TrackService {
   }
 
   remove(id: string) {
+    this.favoritsRepository.remove(id, Track.name);
     this.trackRepository.remove(id);
   }
 }
