@@ -3,6 +3,9 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import * as bodyParser from 'body-parser';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import {ConfigService} from "@nestjs/config";
+
+const configService = new ConfigService();
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bodyParser: true });
@@ -21,7 +24,7 @@ async function bootstrap() {
     .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  const port = 3000;
+  const port = configService.get('INTERNAL_PORT') || 4000;
 
   SwaggerModule.setup('doc', app, document);
 

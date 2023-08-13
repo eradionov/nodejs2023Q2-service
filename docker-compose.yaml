@@ -8,14 +8,9 @@ services:
     container_name: node-api
     tty: true
     ports:
-      - ${HOST_PORT:-4000}:3000
+      - ${HOST_PORT}:${INTERNAL_PORT}
     environment:
-      - DB_TYPE=postgres
-      - PG_USER=${POSTGRES_USER}
-      - PG_PASSWORD=${POSTGRES_PASSWORD}
-      - PG_DB=${POSTGRES_DB}
-      - PG_PORT=5432
-      - PG_HOST=postgresql
+      - DATABASE_DSN=${DATABASE_DSN}
     volumes:
       - ./:/home/node/app
     restart: always
@@ -31,7 +26,7 @@ services:
       context: ./docker/postgres
     container_name: node_pgsql
     ports:
-      - ${POSTGRES_PORT:-5432}:5432
+      - ${POSTGRES_PORT}:${POSTGRES_INTERNAL_PORT}
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}

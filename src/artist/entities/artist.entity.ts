@@ -1,49 +1,44 @@
 import { Expose } from 'class-transformer';
-import { v4 as uuidv4 } from 'uuid';
 import { UpdateArtistDto } from '../dto/update-artist.dto';
 import { ApiProperty } from '@nestjs/swagger';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Album } from '../../album/entities/album.entity';
 
+@Entity()
 export class Artist {
+  @PrimaryGeneratedColumn('uuid')
   @Expose({ name: 'id' })
   @ApiProperty({ name: 'id' })
-  private _id: string;
+  readonly id: string;
 
+  @Column({ length: 30 })
   @Expose({ name: 'name' })
   @ApiProperty({ name: 'name' })
-  private _name: string;
+  name: string;
 
+  @Column()
   @Expose({ name: 'grammy' })
   @ApiProperty({ name: 'grammy' })
-  private _grammy: boolean;
+  grammy: boolean;
+
+  @OneToMany(() => Album, (album) => album.artist, { cascade: true })
+  albums: Album[];
 
   private constructor(name: string, grammy: boolean) {
-    this._id = uuidv4();
-    this._name = name;
-    this._grammy = grammy;
+    this.name = name;
+    this.grammy = grammy;
   }
 
   update(dto: UpdateArtistDto) {
     if (undefined !== dto?.name) {
-      this._name = dto?.name;
+      this.name = dto?.name;
     }
 
     if (undefined !== dto?.grammy) {
-      this._grammy = dto.grammy;
+      this.grammy = dto.grammy;
     }
 
     return this;
-  }
-
-  get id(): string {
-    return this._id;
-  }
-
-  get name(): string {
-    return this._name;
-  }
-
-  get grammy(): boolean {
-    return this._grammy;
   }
 
   static create(name: string, grammy: boolean) {

@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { CreateTrackDto } from './dto/create-track.dto';
 import { UpdateTrackDto } from './dto/update-track.dto';
 import { TrackRepository } from './repository/track.repository';
-import { AlbumRepository } from '../album/repository/album.repository';
 import { EntityNotExistsException } from '../exception/entity_not_exists';
 import { Track } from './entities/track.entity';
 import { FavoriteRepository } from '../favorite/repository/favorite.repository';
@@ -11,7 +10,7 @@ import { FavoriteRepository } from '../favorite/repository/favorite.repository';
 export class TrackService {
   constructor(
     private readonly trackRepository: TrackRepository,
-    private readonly albumRepository: AlbumRepository,
+    // private readonly albumRepository: AlbumRepository,
     private readonly favoritsRepository: FavoriteRepository,
   ) {}
   create(createTrackDto: CreateTrackDto) {
@@ -26,8 +25,8 @@ export class TrackService {
     }
 
     if (
-      null !== createTrackDto.albumId &&
-      undefined === this.albumRepository.findBy(trackQuery)
+      null !== createTrackDto.albumId //&&
+      //undefined === this.albumRepository.findBy(trackQuery)
     ) {
       throw new EntityNotExistsException(createTrackDto.albumId);
     }
@@ -69,8 +68,8 @@ export class TrackService {
     }
 
     if (
-      null !== updateTrackDto.albumId &&
-      undefined === this.albumRepository.findBy(trackQuery)
+      null !== updateTrackDto.albumId //&&
+      // undefined === this.albumRepository.findBy(trackQuery)
     ) {
       throw new EntityNotExistsException(updateTrackDto.artistId);
     }

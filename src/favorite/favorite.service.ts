@@ -1,7 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { FavoriteRepository } from './repository/favorite.repository';
-import { ArtistRepository } from '../artist/repository/artist.repository';
-import { AlbumRepository } from '../album/repository/album.repository';
 import { TrackRepository } from '../track/repository/track.repository';
 import { EntityNotExistsException } from '../exception/entity_not_exists';
 import { Album } from '../album/entities/album.entity';
@@ -13,8 +11,8 @@ import { Response } from './dto/response';
 export class FavoriteService {
   constructor(
     private readonly favoriteRepository: FavoriteRepository,
-    private readonly artistRepository: ArtistRepository,
-    private readonly albumRepository: AlbumRepository,
+    // private readonly artistRepository: ArtistRepository,
+    // private readonly albumRepository: AlbumRepository,
     private readonly trackRepository: TrackRepository,
   ) {}
   findAll(): Response {
@@ -34,7 +32,7 @@ export class FavoriteService {
   create(id: string, classType: string) {
     switch (classType) {
       case Album.name:
-        const album = this.albumRepository.findOneById(id);
+        const album = undefined; //this.albumRepository.findO(id);
         if (undefined === album) {
           throw new EntityNotExistsException(id);
         }
@@ -48,12 +46,12 @@ export class FavoriteService {
 
         return this.favoriteRepository.save(track);
       case Artist.name:
-        const artist = this.artistRepository.findOneById(id);
-        if (undefined === artist) {
-          throw new EntityNotExistsException(id);
-        }
-
-        return this.favoriteRepository.save(artist);
+        // const artist = this.artistRepository.findOneById(id);
+        // if (undefined === artist) {
+        throw new EntityNotExistsException(id);
+        // }
+        return null;
+      //return this.favoriteRepository.save(artist);
       default:
         throw new EntityNotExistsException(id);
     }
