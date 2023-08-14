@@ -19,7 +19,8 @@ import { Artist } from '../artist/entities/artist.entity';
 import { Album } from '../album/entities/album.entity';
 import { Track } from '../track/entities/track.entity';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
-import { Response } from './dto/response';
+import { FavouriteResponse } from './dto/favourite_response';
+import { EntityNotFoundError } from 'typeorm';
 
 @Controller('favs')
 @ApiTags('Favorits')
@@ -30,12 +31,12 @@ export class FavoriteController {
   @HttpCode(HttpStatus.OK)
   @ApiResponse({
     status: HttpStatus.OK,
-    type: Response,
+    type: FavouriteResponse,
     isArray: true,
   })
   @UseInterceptors(ClassSerializerInterceptor)
-  findAll() {
-    return this.favoriteService.findAll();
+  async findAll() {
+    return await this.favoriteService.findAll();
   }
 
   @Post('track/:id')
@@ -49,14 +50,14 @@ export class FavoriteController {
     description: 'Unprocessable.',
   })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Bad Request.' })
-  createTrack(@Param('id', ParseUUIDPipe) id: string) {
+  async createTrack(@Param('id', ParseUUIDPipe) id: string) {
     try {
-      return this.favoriteService.create(id, Track.name);
+      await this.favoriteService.create(id, Track.name);
     } catch (error) {
-      if (error instanceof EntityNotExistsException) {
+      if (error instanceof EntityNotFoundError) {
         throw new UnprocessableEntityException(error);
       }
-
+      console.log(error);
       throw new InternalServerErrorException();
     }
   }
@@ -72,9 +73,9 @@ export class FavoriteController {
     description: 'Unprocessable.',
   })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Bad Request.' })
-  createAlbum(@Param('id', ParseUUIDPipe) id: string) {
+  async createAlbum(@Param('id', ParseUUIDPipe) id: string) {
     try {
-      return this.favoriteService.create(id, Album.name);
+      await this.favoriteService.create(id, Album.name);
     } catch (error) {
       if (error instanceof EntityNotExistsException) {
         throw new UnprocessableEntityException(error);
@@ -95,9 +96,9 @@ export class FavoriteController {
     description: 'Unprocessable.',
   })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Bad Request.' })
-  createArtist(@Param('id', ParseUUIDPipe) id: string) {
+  async createArtist(@Param('id', ParseUUIDPipe) id: string) {
     try {
-      return this.favoriteService.create(id, Artist.name);
+      await this.favoriteService.create(id, Artist.name);
     } catch (error) {
       if (error instanceof EntityNotExistsException) {
         throw new UnprocessableEntityException(error);
@@ -111,9 +112,9 @@ export class FavoriteController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found.' })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Bad Request.' })
-  deleteTrack(@Param('id', ParseUUIDPipe) id: string) {
+  async deleteTrack(@Param('id', ParseUUIDPipe) id: string) {
     try {
-      this.favoriteService.remove(id, Track.name);
+      await this.favoriteService.remove(id, Track.name);
     } catch (error) {
       if (error instanceof EntityNotExistsException) {
         throw new NotFoundException();
@@ -127,9 +128,9 @@ export class FavoriteController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found.' })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Bad Request.' })
-  deleteAlbum(@Param('id', ParseUUIDPipe) id: string) {
+  async deleteAlbum(@Param('id', ParseUUIDPipe) id: string) {
     try {
-      this.favoriteService.remove(id, Album.name);
+      await this.favoriteService.remove(id, Album.name);
     } catch (error) {
       if (error instanceof EntityNotExistsException) {
         throw new NotFoundException();
@@ -143,9 +144,9 @@ export class FavoriteController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found.' })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Bad Request.' })
-  deleteArtist(@Param('id', ParseUUIDPipe) id: string) {
+  async deleteArtist(@Param('id', ParseUUIDPipe) id: string) {
     try {
-      this.favoriteService.remove(id, Artist.name);
+      await this.favoriteService.remove(id, Artist.name);
     } catch (error) {
       if (error instanceof EntityNotExistsException) {
         throw new NotFoundException();

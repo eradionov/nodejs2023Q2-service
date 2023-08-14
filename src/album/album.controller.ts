@@ -14,14 +14,11 @@ import {
   NotFoundException,
   InternalServerErrorException,
   ForbiddenException,
-  BadRequestException,
 } from '@nestjs/common';
 import { AlbumService } from './album.service';
 import { CreateAlbumDto } from './dto/create-album.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
-import { EntityNotExistsException } from '../exception/entity_not_exists';
 import { AccessDeniedException } from '../exception/access_denied';
-import { EntityExistsException } from '../exception/entity_exists';
 import { Album } from './entities/album.entity';
 import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { EntityNotFoundError } from 'typeorm';

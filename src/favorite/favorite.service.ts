@@ -1,63 +1,99 @@
 import { Injectable } from '@nestjs/common';
-import { FavoriteRepository } from './repository/favorite.repository';
-import { TrackRepository } from '../track/repository/track.repository';
 import { EntityNotExistsException } from '../exception/entity_not_exists';
 import { Album } from '../album/entities/album.entity';
 import { Track } from '../track/entities/track.entity';
 import { Artist } from '../artist/entities/artist.entity';
-import { Response } from './dto/response';
+import { FavouriteResponse } from './dto/favourite_response';
+import { Repository } from 'typeorm';
+import { Favorite } from './entities/favorite.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { AlbumResponse } from '../album/dto/album-response';
+import { TrackResponse } from '../track/dto/track-response';
 
 @Injectable()
 export class FavoriteService {
   constructor(
-    private readonly favoriteRepository: FavoriteRepository,
-    // private readonly artistRepository: ArtistRepository,
-    // private readonly albumRepository: AlbumRepository,
-    private readonly trackRepository: TrackRepository,
+    @InjectRepository(Favorite)
+    private readonly favoriteRepository: Repository<Favorite>,
+    @InjectRepository(Artist)
+    private readonly artistRepository: Repository<Artist>,
+    @InjectRepository(Album)
+    private readonly albumRepository: Repository<Album>,
+    @InjectRepository(Track)
+    private readonly trackRepository: Repository<Track>,
   ) {}
-  findAll(): Response {
-    const favorits = this.favoriteRepository.findAll();
+  async findAll() {
+    const favorits = await this.favoriteRepository.find({
+      relations: { track: true, album: true, artist: true },
+    });
 
-    const artists = favorits.map((favorite) => favorite?.artist);
-    const albums = favorits.map((favorite) => favorite?.album);
-    const tracks = favorits.map((favorite) => favorite?.track);
+    let artists = favorits.map((favorite) => favorite?.artist);
+    let albums = favorits.map((favorite) => favorite?.album);
+    let tracks = favorits.map((favorite) => favorite?.track);
 
-    return new Response(
-      artists.filter((item) => item !== null && item !== undefined),
-      albums.filter((item) => item !== null && item !== undefined),
-      tracks.filter((item) => item !== null && item !== undefined),
+    artists = artists.filter((artist) => artist);
+    albums = albums.filter((album) => album);
+    tracks = tracks.filter((track) => track);
+
+    return new FavouriteResponse(
+      artists,
+      albums.map(
+        (album) =>
+          new AlbumResponse(
+            album.id,
+            album.name,
+            album.year,
+            album?.artist?.id,
+          ),
+      ),
+      tracks.map(
+        (track) =>
+          new TrackResponse(
+            track.id,
+            track.name,
+            track.duration,
+            track?.artist?.id,
+            track?.album?.id,
+          ),
+      ),
     );
   }
 
-  create(id: string, classType: string) {
+  async create(id: string, classType: string) {
+    const result = await this.findOneOfEntity(id, classType);
+
     switch (classType) {
       case Album.name:
-        const album = undefined; //this.albumRepository.findO(id);
-        if (undefined === album) {
-          throw new EntityNotExistsException(id);
-        }
+        await this.favoriteRepository.save(new Favorite(null, <Album>result));
 
-        return this.favoriteRepository.save(album);
+        return;
       case Track.name:
-        const track = this.trackRepository.findOneById(id);
-        if (undefined === track) {
-          throw new EntityNotExistsException(id);
-        }
-
-        return this.favoriteRepository.save(track);
+        await this.favoriteRepository.save(
+          new Favorite(null, null, <Track>result),
+        );
       case Artist.name:
-        // const artist = this.artistRepository.findOneById(id);
-        // if (undefined === artist) {
-        throw new EntityNotExistsException(id);
-        // }
-        return null;
-      //return this.favoriteRepository.save(artist);
+        await this.favoriteRepository.save(new Favorite(<Artist>result));
       default:
         throw new EntityNotExistsException(id);
     }
   }
 
-  remove(id: string, classType: string) {
-    this.favoriteRepository.remove(id, classType);
+  async remove(id: string, classType: string) {
+    // await this.favoriteRepository.remove(
+    //   await this.findOneOfEntity(id, classType),
+    // );
+  }
+
+  private async findOneOfEntity(id: string, classType: string) {
+    switch (classType) {
+      case Album.name:
+        return await this.albumRepository.findOneByOrFail({ id });
+      case Track.name:
+        return await this.trackRepository.findOneByOrFail({ id });
+      case Artist.name:
+        return await this.artistRepository.findOneByOrFail({ id });
+      default:
+        throw new EntityNotExistsException(id);
+    }
   }
 }

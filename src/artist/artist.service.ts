@@ -4,9 +4,6 @@ import { UpdateArtistDto } from './dto/update-artist.dto';
 import { Artist } from './entities/artist.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Album } from '../album/entities/album.entity';
-import { Track } from '../track/entities/track.entity';
-import { Favorite } from '../favorite/entities/favorite.entity';
 
 @Injectable()
 export class ArtistService {
@@ -14,7 +11,7 @@ export class ArtistService {
     @InjectRepository(Artist)
     private readonly artistRepository: Repository<Artist>,
   ) {}
-  async create(createArtistDto: CreateArtistDto): Promise<Artist> {
+  async create(createArtistDto: CreateArtistDto) {
     return await this.artistRepository.save(
       Artist.create(createArtistDto.name, createArtistDto.grammy),
     );

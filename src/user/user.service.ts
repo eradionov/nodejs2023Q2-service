@@ -1,51 +1,71 @@
 import { Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { EntityExistsException } from '../exception/entity_exists';
 import { User } from './entities/user.entity';
-import { EntityNotExistsException } from '../exception/entity_not_exists';
 import { AccessDeniedException } from '../exception/access_denied';
-import { UserRepository } from './repository/user.repository';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { UserResponse } from './dto/user-response';
 
 @Injectable()
 export class UserService {
-  constructor(private readonly userRepository: UserRepository) {}
+  constructor(
+    @InjectRepository(User) private readonly userRepository: Repository<User>,
+  ) {}
 
-  create(createUserDto: CreateUserDto) {
-    if (undefined !== this.userRepository.findOneByName(createUserDto.login)) {
-      throw new EntityExistsException(createUserDto.login);
+  async create(createUserDto: CreateUserDto) {
+    let user = await this.userRepository.findOneBy({
+      login: createUserDto.login,
+    });
+
+    if (null !== user) {
+      return user;
     }
 
-    const user = User.create(createUserDto.login, createUserDto.password);
+    user = await this.userRepository.save(
+      User.create(createUserDto.login, createUserDto.password),
+    );
 
-    this.userRepository.save(user);
-
-    return user;
+    return new UserResponse(
+      user.id,
+      user.login,
+      user.version,
+      user.createdAt.getTime(),
+      user.updatedAt?.getTime(),
+    );
   }
 
-  findAll() {
-    return this.userRepository.findAll();
+  async findAll() {
+    return await this.userRepository.find();
   }
 
-  findOne(id: string) {
-    return this.userRepository.findOneById(id);
+  async findOne(id: string) {
+    return await this.userRepository.findOneByOrFail({ id });
   }
 
-  update(id: string, updateUserDto: UpdateUserDto) {
-    const user = this.userRepository.findOneById(id);
-
-    if (undefined === user) {
-      throw new EntityNotExistsException(id);
-    }
+  async update(id: string, updateUserDto: UpdateUserDto) {
+    let user = await this.userRepository.findOneByOrFail({ id });
 
     if (user.password !== updateUserDto.oldPassword) {
       throw new AccessDeniedException();
     }
 
-    return user.update(updateUserDto);
+    user.update(updateUserDto);
+
+    user = await this.userRepository.save(user);
+
+    return new UserResponse(
+      user.id,
+      user.login,
+      user.version,
+      user.createdAt.getTime(),
+      user.updatedAt?.getTime(),
+    );
   }
 
-  remove(id: string) {
-    this.userRepository.remove(id);
+  async remove(id: string) {
+    await this.userRepository.remove(
+      await this.userRepository.findOneByOrFail({ id }),
+    );
   }
 }

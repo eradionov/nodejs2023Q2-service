@@ -1,13 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { CreateAlbumDto } from './dto/create-album.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
-import { EntityNotExistsException } from '../exception/entity_not_exists';
 import { Album } from './entities/album.entity';
-import { Repository } from 'typeorm';
+import { EntityNotFoundError, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Artist } from '../artist/entities/artist.entity';
-import { Track } from '../track/entities/track.entity';
-import { Favorite } from '../favorite/entities/favorite.entity';
 import { AlbumResponse } from './dto/album-response';
 
 @Injectable()
@@ -52,7 +49,14 @@ export class AlbumService {
   }
 
   async findOne(id: string) {
-    const album = await this.albumRepository.findOneByOrFail({ id: id });
+    const album = await this.albumRepository.findOne({
+      where: { id: id },
+      relations: { artist: true },
+    });
+
+    if (null === album) {
+      throw new EntityNotFoundError(Album, id);
+    }
 
     return new AlbumResponse(
       album.id,
@@ -86,8 +90,15 @@ export class AlbumService {
   }
 
   async remove(id: string) {
-    await this.albumRepository.remove(
-      await this.albumRepository.findOneByOrFail({ id: id }),
-    );
+    const album = await this.albumRepository.findOne({
+      where: { id },
+      relations: { artist: true },
+    });
+
+    if (null == album) {
+      throw new EntityNotFoundError(Album, id);
+    }
+
+    await this.albumRepository.remove(album);
   }
 }

@@ -16,12 +16,12 @@ export class CreateTrackDto {
   @ApiProperty()
   @IsOptional()
   @IsUUID()
-  public readonly artistId: string | null;
+  public readonly artistId: string | null = null;
 
   @ApiProperty()
   @IsOptional()
   @IsUUID()
-  public readonly albumId: string | null;
+  public readonly albumId: string | null = null;
 
   @IsInt()
   @ApiProperty()

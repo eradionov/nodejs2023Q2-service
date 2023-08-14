@@ -1,84 +1,141 @@
 import { Injectable } from '@nestjs/common';
 import { CreateTrackDto } from './dto/create-track.dto';
 import { UpdateTrackDto } from './dto/update-track.dto';
-import { TrackRepository } from './repository/track.repository';
-import { EntityNotExistsException } from '../exception/entity_not_exists';
 import { Track } from './entities/track.entity';
-import { FavoriteRepository } from '../favorite/repository/favorite.repository';
+import { EntityNotFoundError, Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Artist } from '../artist/entities/artist.entity';
+import { Album } from '../album/entities/album.entity';
+import { TrackResponse } from './dto/track-response';
 
 @Injectable()
 export class TrackService {
   constructor(
-    private readonly trackRepository: TrackRepository,
-    // private readonly albumRepository: AlbumRepository,
-    private readonly favoritsRepository: FavoriteRepository,
+    @InjectRepository(Track)
+    private readonly trackRepository: Repository<Track>,
+    @InjectRepository(Album)
+    private readonly albumRepository: Repository<Album>,
+    @InjectRepository(Artist)
+    private readonly artistRepository: Repository<Artist>,
   ) {}
-  create(createTrackDto: CreateTrackDto) {
-    const trackQuery: Record<string, any> = {};
+  async create(createTrackDto: CreateTrackDto) {
+    let album = null;
+    let artist = null;
 
-    if (null !== createTrackDto.albumId) {
-      trackQuery.id = createTrackDto.albumId;
+    let track = await this.trackRepository.findOne({
+      where: { name: createTrackDto.name },
+      relations: { artist: true, album: true },
+    });
+
+    if (null !== track) {
+      return new TrackResponse(
+        track.id,
+        track.name,
+        track.duration,
+        track?.artist?.id,
+        track?.album?.id,
+      );
     }
 
-    if (null !== createTrackDto.artistId) {
-      trackQuery.artistId = createTrackDto.artistId;
+    if (null !== createTrackDto?.albumId) {
+      album = await this.albumRepository.findOneByOrFail({
+        id: createTrackDto.albumId,
+      });
     }
 
-    if (
-      null !== createTrackDto.albumId //&&
-      //undefined === this.albumRepository.findBy(trackQuery)
-    ) {
-      throw new EntityNotExistsException(createTrackDto.albumId);
+    if (null !== createTrackDto?.artistId) {
+      artist = await this.artistRepository.findOneByOrFail({
+        id: createTrackDto.artistId,
+      });
     }
 
-    const track = Track.create(
+    track = Track.create(
       createTrackDto.name,
       createTrackDto.duration,
-      createTrackDto.artistId,
-      createTrackDto.albumId,
+      artist,
+      album,
     );
 
-    this.trackRepository.save(track);
+    const updatedTrack = await this.trackRepository.save(track);
 
-    return track;
+    return new TrackResponse(
+      updatedTrack.id,
+      updatedTrack.name,
+      updatedTrack.duration,
+      updatedTrack?.artist?.id,
+      updatedTrack?.album?.id,
+    );
   }
 
-  findAll() {
-    return this.trackRepository.findAll();
+  async findAll() {
+    return (
+      await this.trackRepository.find({
+        relations: { artist: true, album: true },
+      })
+    ).map(
+      (track) =>
+        new TrackResponse(
+          track.id,
+          track.name,
+          track.duration,
+          track?.artist?.id,
+          track?.album?.id,
+        ),
+    );
   }
 
-  findOne(id: string) {
-    return this.trackRepository.findOneById(id);
-  }
+  async findOne(id: string) {
+    const track = await this.trackRepository.findOne({
+      where: { id },
+      relations: { artist: true, album: true },
+    });
 
-  update(id: string, updateTrackDto: UpdateTrackDto) {
-    const track = this.trackRepository.findOneById(id);
-    const trackQuery: Record<string, any> = {};
-
-    if (undefined === track) {
-      throw new EntityNotExistsException(id);
+    if (null === track) {
+      throw new EntityNotFoundError(Track, id);
     }
 
+    return new TrackResponse(
+      track.id,
+      track.name,
+      track.duration,
+      track?.artist?.id,
+      track?.album?.id,
+    );
+  }
+
+  async update(id: string, updateTrackDto: UpdateTrackDto) {
+    const track = await this.trackRepository.findOneByOrFail({ id });
+    let album = null;
+    let artist = null;
+
     if (null !== updateTrackDto.albumId) {
-      trackQuery.id = updateTrackDto.albumId;
+      album = await this.albumRepository.findOneByOrFail({
+        id: updateTrackDto.albumId,
+      });
     }
 
     if (null !== updateTrackDto.artistId) {
-      trackQuery.artistId = updateTrackDto.artistId;
+      artist = await this.artistRepository.findOneByOrFail({
+        id: updateTrackDto.artistId,
+      });
     }
 
-    if (
-      null !== updateTrackDto.albumId //&&
-      // undefined === this.albumRepository.findBy(trackQuery)
-    ) {
-      throw new EntityNotExistsException(updateTrackDto.artistId);
-    }
+    track.update(updateTrackDto.name, updateTrackDto.duration, artist, album);
 
-    return track.update(updateTrackDto);
+    const updatedTrack = await this.trackRepository.save(track);
+
+    return new TrackResponse(
+      updatedTrack.id,
+      updatedTrack.name,
+      updatedTrack.duration,
+      updatedTrack?.artist?.id,
+      updatedTrack?.album?.id,
+    );
   }
 
-  remove(id: string) {
-    this.favoritsRepository.remove(id, Track.name);
-    this.trackRepository.remove(id);
+  async remove(id: string) {
+    await this.trackRepository.remove(
+      await this.trackRepository.findOneByOrFail({ id }),
+    );
   }
 }

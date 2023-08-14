@@ -1,8 +1,7 @@
 import { Expose } from 'class-transformer';
 import { UpdateArtistDto } from '../dto/update-artist.dto';
 import { ApiProperty } from '@nestjs/swagger';
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { Album } from '../../album/entities/album.entity';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class Artist {
@@ -20,9 +19,6 @@ export class Artist {
   @Expose({ name: 'grammy' })
   @ApiProperty({ name: 'grammy' })
   grammy: boolean;
-
-  @OneToMany(() => Album, (album) => album.artist, { cascade: true })
-  albums: Album[];
 
   private constructor(name: string, grammy: boolean) {
     this.name = name;

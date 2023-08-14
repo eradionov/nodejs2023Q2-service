@@ -20,11 +20,10 @@ import { ArtistService } from './artist.service';
 import { CreateArtistDto } from './dto/create-artist.dto';
 import { UpdateArtistDto } from './dto/update-artist.dto';
 import { EntityExistsException } from '../exception/entity_exists';
-import { EntityNotExistsException } from '../exception/entity_not_exists';
 import { AccessDeniedException } from '../exception/access_denied';
 import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Artist } from './entities/artist.entity';
-import {EntityNotFoundError} from "typeorm";
+import { EntityNotFoundError } from 'typeorm';
 
 @Controller('artist')
 @ApiTags('Artist')

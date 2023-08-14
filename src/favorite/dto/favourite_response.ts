@@ -1,18 +1,22 @@
 import { Artist } from '../../artist/entities/artist.entity';
-import { Album } from '../../album/entities/album.entity';
-import { Track } from '../../track/entities/track.entity';
 import { ApiProperty } from '@nestjs/swagger';
+import { AlbumResponse } from '../../album/dto/album-response';
+import { TrackResponse } from '../../track/dto/track-response';
 
-export class Response {
+export class FavouriteResponse {
   @ApiProperty({ type: String, isArray: true })
   public readonly artists: Artist[];
 
   @ApiProperty({ type: String, isArray: true })
-  public readonly albums: Album[];
+  public readonly albums: AlbumResponse[];
 
   @ApiProperty({ type: String, isArray: true })
-  public readonly tracks: Track[];
-  constructor(artists: Artist[], albums: Album[], tracks: Track[]) {
+  public readonly tracks: TrackResponse[];
+  constructor(
+    artists: Artist[] = [],
+    albums: AlbumResponse[] = [],
+    tracks: TrackResponse[] = [],
+  ) {
     this.albums = albums;
     this.artists = artists;
     this.tracks = tracks;
