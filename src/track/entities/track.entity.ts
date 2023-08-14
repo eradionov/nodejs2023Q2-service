@@ -1,67 +1,62 @@
 import { Expose } from 'class-transformer';
-import { v4 as uuidv4 } from 'uuid';
-import { UpdateTrackDto } from '../dto/update-track.dto';
 import { ApiProperty } from '@nestjs/swagger';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Album } from '../../album/entities/album.entity';
+import { Artist } from '../../artist/entities/artist.entity';
 
+@Entity()
 export class Track {
+  @PrimaryGeneratedColumn('uuid')
   @Expose({ name: 'id' })
   @ApiProperty({ name: 'id' })
-  private _id: string;
+  readonly id: string;
 
+  @Column({ unique: true })
   @Expose({ name: 'name' })
   @ApiProperty({ name: 'name' })
-  private _name: string;
+  name: string;
 
-  @Expose({ name: 'artistId' })
-  @ApiProperty({ name: 'artistId' })
-  private _artistId: string | null;
+  @Expose({ name: 'artist' })
+  @ApiProperty({ name: 'artist' })
+  @ManyToOne(() => Artist, (Artist) => Artist.id, {
+    onDelete: 'SET NULL',
+  })
+  artist: Artist | null;
 
-  @Expose({ name: 'albumId' })
-  @ApiProperty({ name: 'albumId' })
-  private _albumId: string | null;
+  @Expose({ name: 'album' })
+  @ApiProperty({ name: 'album' })
+  @ManyToOne(() => Album, (Album) => Album.id, {
+    onDelete: 'SET NULL',
+  })
+  album: Album | null;
 
+  @Column()
   @Expose({ name: 'duration' })
   @ApiProperty({ name: 'duration' })
-  private _duration: number;
+  duration: number;
 
   private constructor(
     name: string,
     duration: number,
-    artistId: string | null,
-    albumId: string | null,
+    artist: Artist | null,
+    album: Album | null,
   ) {
-    this._id = uuidv4();
-    this._name = name;
-    this._duration = duration;
-    this._artistId = artistId;
-    this._albumId = albumId;
+    this.name = name;
+    this.duration = duration;
+    this.artist = artist;
+    this.album = album;
   }
 
-  get id(): string {
-    return this._id;
-  }
-
-  get name(): string {
-    return this._name;
-  }
-
-  get artistId(): string | null {
-    return this._artistId;
-  }
-
-  get albumId(): string | null {
-    return this._albumId;
-  }
-
-  get duration(): number {
-    return this._duration;
-  }
-
-  update(updateTrackDto: UpdateTrackDto) {
-    this._name = updateTrackDto.name;
-    this._duration = updateTrackDto.duration;
-    this._artistId = updateTrackDto.artistId;
-    this._albumId = updateTrackDto.albumId;
+  update(
+    name: string,
+    duration: number,
+    artist: Artist | null,
+    album: Album | null,
+  ) {
+    this.name = name;
+    this.duration = duration;
+    this.artist = artist;
+    this.album = album;
 
     return this;
   }
@@ -69,9 +64,9 @@ export class Track {
   static create(
     name: string,
     duration: number,
-    artistId: string | null,
-    albumId: string | null,
+    artist: Artist | null = null,
+    album: Album | null = null,
   ) {
-    return new Track(name, duration, artistId, albumId);
+    return new Track(name, duration, artist, album);
   }
 }

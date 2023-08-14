@@ -1,72 +1,104 @@
 import { Injectable } from '@nestjs/common';
 import { CreateAlbumDto } from './dto/create-album.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
-import { AlbumRepository } from './repository/album.repository';
-import { ArtistRepository } from '../artist/repository/artist.repository';
-import { EntityNotExistsException } from '../exception/entity_not_exists';
 import { Album } from './entities/album.entity';
-import { UpdateTrackDto } from '../track/dto/update-track.dto';
-import { FavoriteRepository } from '../favorite/repository/favorite.repository';
-import { TrackRepository } from '../track/repository/track.repository';
+import { EntityNotFoundError, Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Artist } from '../artist/entities/artist.entity';
+import { AlbumResponse } from './dto/album-response';
 
 @Injectable()
 export class AlbumService {
   constructor(
-    private readonly albumRepository: AlbumRepository,
-    private readonly artistRepository: ArtistRepository,
-    private readonly trackRepository: TrackRepository,
-    private readonly favoritsRepository: FavoriteRepository,
+    @InjectRepository(Album)
+    private readonly albumRepository: Repository<Album>,
+    @InjectRepository(Artist)
+    private readonly artistRepository: Repository<Artist>,
   ) {}
-  create(createAlbumDto: CreateAlbumDto) {
-    if (
-      null !== createAlbumDto.artistId &&
-      undefined === this.artistRepository.findOneById(createAlbumDto.artistId)
-    ) {
-      throw new EntityNotExistsException(createAlbumDto.artistId);
-    }
-
-    const album = Album.create(
-      createAlbumDto.name,
-      createAlbumDto.year,
-      createAlbumDto.artistId,
-    );
-
-    this.albumRepository.save(album);
-
-    return album;
-  }
-
-  findAll() {
-    return this.albumRepository.findAll();
-  }
-
-  findOne(id: string) {
-    return this.albumRepository.findOneById(id);
-  }
-
-  update(id: string, updateAlbumDto: UpdateAlbumDto) {
-    const album = this.albumRepository.findOneById(id);
-
-    if (undefined === album) {
-      throw new EntityNotExistsException(id);
-    }
+  async create(createAlbumDto: CreateAlbumDto) {
+    let artist = null;
 
     if (
-      null !== updateAlbumDto.artistId &&
-      undefined === this.artistRepository.findOneById(updateAlbumDto.artistId)
+      null !== createAlbumDto?.artistId &&
+      undefined !== createAlbumDto?.artistId
     ) {
-      throw new EntityNotExistsException(updateAlbumDto.artistId);
+      artist = await this.artistRepository.findOneByOrFail({
+        id: createAlbumDto.artistId,
+      });
     }
 
-    return album.update(updateAlbumDto);
+    const album = await this.albumRepository.save(
+      Album.create(createAlbumDto.name, createAlbumDto.year, artist),
+    );
+
+    return new AlbumResponse(
+      album.id,
+      album.name,
+      album.year,
+      album?.artist?.id,
+    );
   }
 
-  remove(id: string) {
-    this.favoritsRepository.remove(id, Album.name);
-    this.trackRepository.updateWhere(
-      { albumId: id } as UpdateTrackDto,
-      { albumId: null } as UpdateTrackDto,
+  async findAll() {
+    return (
+      await this.albumRepository.find({ relations: { artist: true } })
+    ).map(
+      (album) =>
+        new AlbumResponse(album.id, album.name, album.year, album?.artist?.id),
     );
-    this.albumRepository.remove(id);
+  }
+
+  async findOne(id: string) {
+    const album = await this.albumRepository.findOne({
+      where: { id: id },
+      relations: { artist: true },
+    });
+
+    if (null === album) {
+      throw new EntityNotFoundError(Album, id);
+    }
+
+    return new AlbumResponse(
+      album.id,
+      album.name,
+      album.year,
+      album?.artist?.id,
+    );
+  }
+
+  async update(id: string, updateAlbumDto: UpdateAlbumDto) {
+    const album = await this.albumRepository.findOneByOrFail({ id: id });
+    let artist = null;
+
+    if (null === updateAlbumDto.artistId) {
+      album.update(updateAlbumDto);
+    } else {
+      artist = await this.artistRepository.findOneByOrFail({
+        id: updateAlbumDto.artistId,
+      });
+      album.update(updateAlbumDto, artist);
+    }
+
+    const updatedAlbum = await this.albumRepository.save(album);
+
+    return new AlbumResponse(
+      updatedAlbum.id,
+      updatedAlbum.name,
+      updatedAlbum.year,
+      updatedAlbum?.artist?.id,
+    );
+  }
+
+  async remove(id: string) {
+    const album = await this.albumRepository.findOne({
+      where: { id },
+      relations: { artist: true },
+    });
+
+    if (null == album) {
+      throw new EntityNotFoundError(Album, id);
+    }
+
+    await this.albumRepository.remove(album);
   }
 }

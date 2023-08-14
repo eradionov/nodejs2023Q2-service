@@ -19,11 +19,11 @@ import {
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { EntityExistsException } from '../exception/entity_exists';
-import { EntityNotExistsException } from '../exception/entity_not_exists';
 import { AccessDeniedException } from '../exception/access_denied';
 import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { User } from './entities/user.entity';
+import { EntityNotFoundError } from 'typeorm';
+import { EntityExistsException } from '../exception/entity_exists';
 
 @Controller('user')
 @ApiTags('User')
@@ -38,15 +38,15 @@ export class UserController {
     type: User,
   })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Bad Request.' })
-  create(@Body() createUserDto: CreateUserDto) {
+  async create(@Body() createUserDto: CreateUserDto) {
     try {
-      return this.userService.create(createUserDto);
+      return await this.userService.create(createUserDto);
     } catch (error) {
       if (error instanceof EntityExistsException) {
         throw new BadRequestException(error);
       }
 
-      throw new InternalServerErrorException();
+      throw new InternalServerErrorException(error);
     }
   }
 
@@ -58,8 +58,12 @@ export class UserController {
     type: User,
     isArray: true,
   })
-  findAll() {
-    return this.userService.findAll();
+  async findAll() {
+    try {
+      return await this.userService.findAll();
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
   }
 
   @Get(':id')
@@ -71,14 +75,20 @@ export class UserController {
   })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found.' })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Bad Request.' })
-  findOne(@Param('id', ParseUUIDPipe) id: string) {
-    const user = this.userService.findOne(id);
+  async findOne(@Param('id', ParseUUIDPipe) id: string) {
+    try {
+      return await this.userService.findOne(id);
+    } catch (error) {
+      if (error instanceof EntityNotFoundError) {
+        throw new NotFoundException();
+      }
 
-    if (undefined === user) {
-      throw new NotFoundException();
+      if (error instanceof AccessDeniedException) {
+        throw new ForbiddenException();
+      }
+
+      throw new InternalServerErrorException();
     }
-
-    return user;
   }
 
   @Put(':id')
@@ -93,14 +103,14 @@ export class UserController {
   })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found.' })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Bad Request.' })
-  update(
+  async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateUserDto: UpdateUserDto,
   ) {
     try {
-      return this.userService.update(id, updateUserDto);
+      return await this.userService.update(id, updateUserDto);
     } catch (error) {
-      if (error instanceof EntityNotExistsException) {
+      if (error instanceof EntityNotFoundError) {
         throw new NotFoundException();
       }
 
@@ -116,11 +126,11 @@ export class UserController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found.' })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Bad Request.' })
-  remove(@Param('id', ParseUUIDPipe) id: string) {
+  async remove(@Param('id', ParseUUIDPipe) id: string) {
     try {
-      this.userService.remove(id);
+      await this.userService.remove(id);
     } catch (error) {
-      if (error instanceof EntityNotExistsException) {
+      if (error instanceof EntityNotFoundError) {
         throw new NotFoundException();
       }
 

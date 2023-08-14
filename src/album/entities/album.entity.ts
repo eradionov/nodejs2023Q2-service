@@ -1,67 +1,48 @@
-import { v4 as uuidv4 } from 'uuid';
-import { Expose } from 'class-transformer';
 import { UpdateAlbumDto } from '../dto/update-album.dto';
-import { ApiProperty } from '@nestjs/swagger';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Artist } from '../../artist/entities/artist.entity';
 
+@Entity()
 export class Album {
-  @Expose({ name: 'id' })
-  @ApiProperty({ name: 'id' })
-  private _id: string;
+  @PrimaryGeneratedColumn('uuid')
+  readonly id: string;
 
-  @Expose({ name: 'name' })
-  @ApiProperty({ name: 'name' })
-  private _name: string;
+  @Column({ length: 30 }) name: string;
 
-  @Expose({ name: 'year' })
-  @ApiProperty({ name: 'year' })
-  private _year: number;
+  @Column('int') year: number;
 
-  @Expose({ name: 'artistId' })
-  @ApiProperty({ name: 'artistId' })
-  private _artistId: string | null;
+  @ManyToOne(() => Artist, (Artist) => Artist.id, {
+    onDelete: 'SET NULL',
+  })
+  artist: Artist | null;
 
   private constructor(
     name: string,
     year: number,
-    artistId: string | null = null,
+    artist: Artist | null = null,
   ) {
-    this._id = uuidv4();
-    this._name = name;
-    this._year = year;
-    this._artistId = artistId;
+    this.name = name;
+    this.year = year;
+    this.artist = artist;
   }
 
-  public update(updateAlbumDto: UpdateAlbumDto) {
+  public update(updateAlbumDto: UpdateAlbumDto, artist?: Artist) {
     if (undefined !== updateAlbumDto?.name) {
-      this._name = updateAlbumDto.name;
+      this.name = updateAlbumDto.name;
     }
 
     if (undefined !== updateAlbumDto?.year) {
-      this._year = updateAlbumDto.year;
+      this.year = updateAlbumDto.year;
     }
 
-    this._artistId = updateAlbumDto.artistId;
+    if (undefined !== updateAlbumDto?.artistId) {
+      this.artist = artist || null;
+    }
 
     return this;
   }
 
-  get id(): string {
-    return this._id;
-  }
-
-  get name(): string {
-    return this._name;
-  }
-
-  get year(): number {
-    return this._year;
-  }
-
-  get artistId(): string | null {
-    return this._artistId;
-  }
-
-  static create(name: string, year: number, artistId: string | null = null) {
-    return new Album(name, year, artistId);
+  static create(name: string, year: number, artist: Artist | null = null) {
+    return new Album(name, year, artist);
   }
 }

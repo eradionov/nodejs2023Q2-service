@@ -1,59 +1,41 @@
 import { Injectable } from '@nestjs/common';
 import { CreateArtistDto } from './dto/create-artist.dto';
 import { UpdateArtistDto } from './dto/update-artist.dto';
-import { ArtistRepository } from './repository/artist.repository';
 import { Artist } from './entities/artist.entity';
-import { EntityNotExistsException } from '../exception/entity_not_exists';
-import { AlbumRepository } from '../album/repository/album.repository';
-import { TrackRepository } from '../track/repository/track.repository';
-import { UpdateTrackDto } from '../track/dto/update-track.dto';
-import { UpdateAlbumDto } from '../album/dto/update-album.dto';
-import { FavoriteRepository } from '../favorite/repository/favorite.repository';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class ArtistService {
   constructor(
-    private readonly artistRepository: ArtistRepository,
-    private readonly albumRepository: AlbumRepository,
-    private readonly trackRepository: TrackRepository,
-    private readonly favoritsRepository: FavoriteRepository,
+    @InjectRepository(Artist)
+    private readonly artistRepository: Repository<Artist>,
   ) {}
-  create(createArtistDto: CreateArtistDto): Artist {
-    const artist = Artist.create(createArtistDto.name, createArtistDto.grammy);
-
-    this.artistRepository.save(artist);
-
-    return artist;
-  }
-
-  findAll() {
-    return this.artistRepository.findAll();
-  }
-
-  findOne(id: string) {
-    return this.artistRepository.findOneById(id);
-  }
-
-  update(id: string, updateArtistDto: UpdateArtistDto) {
-    const artist = this.artistRepository.findOneById(id);
-
-    if (undefined === artist) {
-      throw new EntityNotExistsException(id);
-    }
-
-    return artist.update(updateArtistDto);
-  }
-
-  remove(id: string) {
-    this.favoritsRepository.remove(id, Artist.name);
-    this.albumRepository.updateWhere(
-      { artistId: id } as UpdateAlbumDto,
-      { artistId: null } as UpdateAlbumDto,
+  async create(createArtistDto: CreateArtistDto) {
+    return await this.artistRepository.save(
+      Artist.create(createArtistDto.name, createArtistDto.grammy),
     );
-    this.trackRepository.updateWhere(
-      { artistId: id } as UpdateTrackDto,
-      { artistId: null } as UpdateTrackDto,
+  }
+
+  async findAll() {
+    return await this.artistRepository.find();
+  }
+
+  async findOne(id: string) {
+    return await this.artistRepository.findOneByOrFail({ id: id });
+  }
+
+  async update(id: string, updateArtistDto: UpdateArtistDto) {
+    const artist = await this.artistRepository.findOneByOrFail({ id: id });
+
+    artist.update(updateArtistDto);
+
+    return await this.artistRepository.save(artist);
+  }
+
+  async remove(id: string) {
+    await this.artistRepository.remove(
+      await this.artistRepository.findOneByOrFail({ id: id }),
     );
-    this.artistRepository.remove(id);
   }
 }

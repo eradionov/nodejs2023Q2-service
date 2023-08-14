@@ -1,12 +1,13 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import * as dotenv from 'dotenv';
 import { ValidationPipe } from '@nestjs/common';
 import * as bodyParser from 'body-parser';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { ConfigService } from '@nestjs/config';
+
+const configService = new ConfigService();
 
 async function bootstrap() {
-  dotenv.config();
   const app = await NestFactory.create(AppModule, { bodyParser: true });
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
   app.use(
@@ -23,9 +24,13 @@ async function bootstrap() {
     .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);
+  const port = configService.get('INTERNAL_PORT') || 4000;
 
   SwaggerModule.setup('doc', app, document);
 
-  await app.listen(process.env.PORT);
+  await app.listen(port, () => {
+    console.log(`Listening on port ${port}`);
+  });
 }
+
 bootstrap();

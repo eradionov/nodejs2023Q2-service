@@ -1,7 +1,6 @@
 import { TrackService } from './track.service';
 import { CreateTrackDto } from './dto/create-track.dto';
 import { UpdateTrackDto } from './dto/update-track.dto';
-import { EntityNotExistsException } from '../exception/entity_not_exists';
 import { AccessDeniedException } from '../exception/access_denied';
 import {
   BadRequestException,
@@ -24,6 +23,7 @@ import {
 import { EntityExistsException } from '../exception/entity_exists';
 import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Track } from './entities/track.entity';
+import { EntityNotFoundError } from 'typeorm';
 
 @Controller('track')
 @ApiTags('Track')
@@ -38,15 +38,15 @@ export class TrackController {
     type: Track,
   })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Bad Request.' })
-  create(@Body() createTrackDto: CreateTrackDto) {
+  async create(@Body() createTrackDto: CreateTrackDto) {
     try {
-      return this.trackService.create(createTrackDto);
+      return await this.trackService.create(createTrackDto);
     } catch (error) {
       if (error instanceof EntityExistsException) {
         throw new BadRequestException(error);
       }
 
-      throw new InternalServerErrorException();
+      throw new InternalServerErrorException(error);
     }
   }
 
@@ -58,8 +58,8 @@ export class TrackController {
     type: Track,
     isArray: true,
   })
-  findAll() {
-    return this.trackService.findAll();
+  async findAll() {
+    return await this.trackService.findAll();
   }
 
   @Get(':id')
@@ -71,14 +71,14 @@ export class TrackController {
   })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found.' })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Bad Request.' })
-  findOne(@Param('id', ParseUUIDPipe) id: string) {
-    const track = this.trackService.findOne(id);
-
-    if (undefined === track) {
-      throw new NotFoundException();
+  async findOne(@Param('id', ParseUUIDPipe) id: string) {
+    try {
+      return await this.trackService.findOne(id);
+    } catch (error) {
+      if (error instanceof EntityNotFoundError) {
+        throw new NotFoundException();
+      }
     }
-
-    return track;
   }
 
   @Put(':id')
@@ -94,14 +94,14 @@ export class TrackController {
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found.' })
   @ApiResponse({ status: HttpStatus.FORBIDDEN, description: 'Forbidden.' })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Bad Request.' })
-  update(
+  async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateTrackDto: UpdateTrackDto,
   ) {
     try {
-      return this.trackService.update(id, updateTrackDto);
+      return await this.trackService.update(id, updateTrackDto);
     } catch (error) {
-      if (error instanceof EntityNotExistsException) {
+      if (error instanceof EntityNotFoundError) {
         throw new NotFoundException();
       }
 
@@ -117,11 +117,11 @@ export class TrackController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found.' })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Bad Request.' })
-  remove(@Param('id', ParseUUIDPipe) id: string) {
+  async remove(@Param('id', ParseUUIDPipe) id: string) {
     try {
-      this.trackService.remove(id);
+      await this.trackService.remove(id);
     } catch (error) {
-      if (error instanceof EntityNotExistsException) {
+      if (error instanceof EntityNotFoundError) {
         throw new NotFoundException();
       }
 

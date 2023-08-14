@@ -14,16 +14,14 @@ import {
   NotFoundException,
   InternalServerErrorException,
   ForbiddenException,
-  BadRequestException,
 } from '@nestjs/common';
 import { AlbumService } from './album.service';
 import { CreateAlbumDto } from './dto/create-album.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
-import { EntityNotExistsException } from '../exception/entity_not_exists';
 import { AccessDeniedException } from '../exception/access_denied';
-import { EntityExistsException } from '../exception/entity_exists';
 import { Album } from './entities/album.entity';
 import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { EntityNotFoundError } from 'typeorm';
 
 @Controller('album')
 @ApiTags('Album')
@@ -38,12 +36,12 @@ export class AlbumController {
     type: Album,
   })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Bad Request.' })
-  create(@Body() createAlbumDto: CreateAlbumDto): Album {
+  async create(@Body() createAlbumDto: CreateAlbumDto) {
     try {
-      return this.albumService.create(createAlbumDto);
+      return await this.albumService.create(createAlbumDto);
     } catch (error) {
-      if (error instanceof EntityExistsException) {
-        throw new BadRequestException(error, error.message);
+      if (error instanceof EntityNotFoundError) {
+        throw new NotFoundException();
       }
 
       throw new InternalServerErrorException(error);
@@ -58,8 +56,8 @@ export class AlbumController {
     type: Album,
     isArray: true,
   })
-  findAll() {
-    return this.albumService.findAll();
+  async findAll() {
+    return await this.albumService.findAll();
   }
 
   @Get(':id')
@@ -72,14 +70,16 @@ export class AlbumController {
   })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found.' })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Bad Request.' })
-  findOne(@Param('id', ParseUUIDPipe) id: string) {
-    const album = this.albumService.findOne(id);
+  async findOne(@Param('id', ParseUUIDPipe) id: string) {
+    try {
+      return await this.albumService.findOne(id);
+    } catch (error) {
+      if (error instanceof EntityNotFoundError) {
+        throw new NotFoundException();
+      }
 
-    if (undefined === album) {
-      throw new NotFoundException();
+      throw new InternalServerErrorException();
     }
-
-    return album;
   }
 
   @Put(':id')
@@ -91,14 +91,14 @@ export class AlbumController {
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found.' })
   @ApiResponse({ status: HttpStatus.FORBIDDEN, description: 'Forbidden.' })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Bad Request.' })
-  update(
+  async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateAlbumDto: UpdateAlbumDto,
   ) {
     try {
-      return this.albumService.update(id, updateAlbumDto);
+      return await this.albumService.update(id, updateAlbumDto);
     } catch (error) {
-      if (error instanceof EntityNotExistsException) {
+      if (error instanceof EntityNotFoundError) {
         throw new NotFoundException();
       }
 
@@ -117,11 +117,11 @@ export class AlbumController {
   })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Bad Request.' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found.' })
-  remove(@Param('id', ParseUUIDPipe) id: string) {
+  async remove(@Param('id', ParseUUIDPipe) id: string) {
     try {
-      this.albumService.remove(id);
+      await this.albumService.remove(id);
     } catch (error) {
-      if (error instanceof EntityNotExistsException) {
+      if (error instanceof EntityNotFoundError) {
         throw new NotFoundException();
       }
 

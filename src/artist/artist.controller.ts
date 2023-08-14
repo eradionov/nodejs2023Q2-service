@@ -20,10 +20,10 @@ import { ArtistService } from './artist.service';
 import { CreateArtistDto } from './dto/create-artist.dto';
 import { UpdateArtistDto } from './dto/update-artist.dto';
 import { EntityExistsException } from '../exception/entity_exists';
-import { EntityNotExistsException } from '../exception/entity_not_exists';
 import { AccessDeniedException } from '../exception/access_denied';
 import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Artist } from './entities/artist.entity';
+import { EntityNotFoundError } from 'typeorm';
 
 @Controller('artist')
 @ApiTags('Artist')
@@ -38,9 +38,9 @@ export class ArtistController {
     type: Artist,
   })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Bad Request.' })
-  create(@Body() createArtistDto: CreateArtistDto) {
+  async create(@Body() createArtistDto: CreateArtistDto) {
     try {
-      return this.artistService.create(createArtistDto);
+      return await this.artistService.create(createArtistDto);
     } catch (error) {
       if (error instanceof EntityExistsException) {
         throw new BadRequestException(error);
@@ -59,8 +59,8 @@ export class ArtistController {
     isArray: true,
   })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Bad Request.' })
-  findAll() {
-    return this.artistService.findAll();
+  async findAll() {
+    return await this.artistService.findAll();
   }
 
   @Get(':id')
@@ -71,14 +71,16 @@ export class ArtistController {
     type: Artist,
   })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found.' })
-  findOne(@Param('id', ParseUUIDPipe) id: string) {
-    const artist = this.artistService.findOne(id);
+  async findOne(@Param('id', ParseUUIDPipe) id: string) {
+    try {
+      return await this.artistService.findOne(id);
+    } catch (error) {
+      if (error instanceof EntityNotFoundError) {
+        throw new NotFoundException();
+      }
 
-    if (undefined === artist) {
-      throw new NotFoundException();
+      throw new InternalServerErrorException();
     }
-
-    return artist;
   }
 
   @Put(':id')
@@ -90,14 +92,14 @@ export class ArtistController {
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found.' })
   @ApiResponse({ status: HttpStatus.FORBIDDEN, description: 'Forbidden.' })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Bad Request.' })
-  update(
+  async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateArtistDto: UpdateArtistDto,
   ) {
     try {
-      return this.artistService.update(id, updateArtistDto);
+      return await this.artistService.update(id, updateArtistDto);
     } catch (error) {
-      if (error instanceof EntityNotExistsException) {
+      if (error instanceof EntityNotFoundError) {
         throw new NotFoundException();
       }
 
@@ -113,11 +115,11 @@ export class ArtistController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found.' })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Bad Request.' })
-  remove(@Param('id', ParseUUIDPipe) id: string) {
+  async remove(@Param('id', ParseUUIDPipe) id: string) {
     try {
-      this.artistService.remove(id);
+      await this.artistService.remove(id);
     } catch (error) {
-      if (error instanceof EntityNotExistsException) {
+      if (error instanceof EntityNotFoundError) {
         throw new NotFoundException();
       }
 
