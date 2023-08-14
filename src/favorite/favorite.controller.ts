@@ -19,7 +19,6 @@ import { Artist } from '../artist/entities/artist.entity';
 import { Album } from '../album/entities/album.entity';
 import { Track } from '../track/entities/track.entity';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
-import { FavouriteResponse } from './dto/favourite_response';
 import { EntityNotFoundError } from 'typeorm';
 
 @Controller('favs')
@@ -31,7 +30,6 @@ export class FavoriteController {
   @HttpCode(HttpStatus.OK)
   @ApiResponse({
     status: HttpStatus.OK,
-    type: FavouriteResponse,
     isArray: true,
   })
   @UseInterceptors(ClassSerializerInterceptor)
@@ -41,10 +39,6 @@ export class FavoriteController {
 
   @Post('track/:id')
   @HttpCode(HttpStatus.CREATED)
-  @ApiResponse({
-    status: HttpStatus.OK,
-    type: Track,
-  })
   @ApiResponse({
     status: HttpStatus.UNPROCESSABLE_ENTITY,
     description: 'Unprocessable.',
@@ -57,17 +51,13 @@ export class FavoriteController {
       if (error instanceof EntityNotFoundError) {
         throw new UnprocessableEntityException(error);
       }
-      console.log(error);
+
       throw new InternalServerErrorException();
     }
   }
 
   @Post('album/:id')
   @HttpCode(HttpStatus.CREATED)
-  @ApiResponse({
-    status: HttpStatus.OK,
-    type: Album,
-  })
   @ApiResponse({
     status: HttpStatus.UNPROCESSABLE_ENTITY,
     description: 'Unprocessable.',
@@ -77,7 +67,7 @@ export class FavoriteController {
     try {
       await this.favoriteService.create(id, Album.name);
     } catch (error) {
-      if (error instanceof EntityNotExistsException) {
+      if (error instanceof EntityNotFoundError) {
         throw new UnprocessableEntityException(error);
       }
 
@@ -88,10 +78,6 @@ export class FavoriteController {
   @Post('artist/:id')
   @HttpCode(HttpStatus.CREATED)
   @ApiResponse({
-    status: HttpStatus.OK,
-    type: Artist,
-  })
-  @ApiResponse({
     status: HttpStatus.UNPROCESSABLE_ENTITY,
     description: 'Unprocessable.',
   })
@@ -100,7 +86,7 @@ export class FavoriteController {
     try {
       await this.favoriteService.create(id, Artist.name);
     } catch (error) {
-      if (error instanceof EntityNotExistsException) {
+      if (error instanceof EntityNotFoundError) {
         throw new UnprocessableEntityException(error);
       }
 
@@ -116,7 +102,7 @@ export class FavoriteController {
     try {
       await this.favoriteService.remove(id, Track.name);
     } catch (error) {
-      if (error instanceof EntityNotExistsException) {
+      if (error instanceof EntityNotFoundError) {
         throw new NotFoundException();
       }
 
@@ -132,7 +118,7 @@ export class FavoriteController {
     try {
       await this.favoriteService.remove(id, Album.name);
     } catch (error) {
-      if (error instanceof EntityNotExistsException) {
+      if (error instanceof EntityNotFoundError) {
         throw new NotFoundException();
       }
 
@@ -148,7 +134,7 @@ export class FavoriteController {
     try {
       await this.favoriteService.remove(id, Artist.name);
     } catch (error) {
-      if (error instanceof EntityNotExistsException) {
+      if (error instanceof EntityNotFoundError) {
         throw new NotFoundException();
       }
 
