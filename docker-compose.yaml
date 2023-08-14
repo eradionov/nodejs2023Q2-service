@@ -1,7 +1,7 @@
 version: '3.7'
 services:
   node-api:
-    image: eradionov/nodejs2023q2-service-node-api
+    image: nodejs2023q2-service-node-api
     build:
       context: .
       target: dev
@@ -21,7 +21,7 @@ services:
       - rs-school-service
 
   postgresql:
-    image: eradionov/nodejs2023q2-service-pgsql
+    image: nodejs2023q2-service-pgsql
     build:
       context: ./docker/postgres
     container_name: node_pgsql

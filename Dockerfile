@@ -1,4 +1,4 @@
-FROM node:18-alpine as parent
+FROM yradzivonau/nodejs2023q2-service-node-api as parent
 
 RUN mkdir -p /home/node/app
 
