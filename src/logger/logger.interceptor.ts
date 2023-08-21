@@ -6,7 +6,6 @@ import { CustomLoggerService } from './custom.logger.service';
 export class LoggerInterceptor implements NestInterceptor {
   constructor(private readonly logger: CustomLoggerService) {}
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
-    console.log('Before...');
     const response = context.switchToHttp().getResponse();
 
     return next
