@@ -4,6 +4,7 @@ import { ValidationPipe } from '@nestjs/common';
 import * as bodyParser from 'body-parser';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
+import { CustomLoggerService } from './logger/custom.logger.service';
 
 const configService = new ConfigService();
 
@@ -27,6 +28,17 @@ async function bootstrap() {
   const port = configService.get('INTERNAL_PORT') || 4000;
 
   SwaggerModule.setup('doc', app, document);
+
+  const loggerService = app.get(CustomLoggerService);
+
+  process.on('uncaughtException', (err, origin) => {
+    loggerService.error(`Uncaught Exception: ${err}; ${origin}.`);
+    process.exit(1);
+  });
+
+  process.on('unhandledRejection', (reason) => {
+    loggerService.error(`Unhandled Rejection: ${reason}`);
+  });
 
   await app.listen(port, () => {
     console.log(`Listening on port ${port}`);

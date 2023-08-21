@@ -8,7 +8,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { FavoriteTrack } from './entities/favorite_track.entity';
 import { FavoriteArtist } from './entities/favorite_artist.entity';
 import { FavoriteAlbum } from './entities/favorite_album.entity';
-import { FavoriteResponse } from './dto/favourite_response';
 import { FavoriteArtistDto } from './dto/favorite_artist_dto';
 import { FavoriteAlbumDto } from './dto/favorite_album_dto';
 import { FavoriteTrackDto } from './dto/favorite_track_dto';
