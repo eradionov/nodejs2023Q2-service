@@ -17,14 +17,15 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
-  Put, UseGuards,
+  Put,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { EntityExistsException } from '../exception/entity_exists';
 import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Track } from './entities/track.entity';
 import { EntityNotFoundError } from 'typeorm';
-import {JwtAuthenticationGuard} from "../auth/guard/jwt-authentication.guard";
+import { JwtAuthenticationGuard } from '../auth/guard/jwt-authentication.guard';
 
 @Controller('track')
 @ApiTags('Track')

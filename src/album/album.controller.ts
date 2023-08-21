@@ -13,7 +13,8 @@ import {
   Put,
   NotFoundException,
   InternalServerErrorException,
-  ForbiddenException, UseGuards,
+  ForbiddenException,
+  UseGuards,
 } from '@nestjs/common';
 import { AlbumService } from './album.service';
 import { CreateAlbumDto } from './dto/create-album.dto';
@@ -22,7 +23,7 @@ import { AccessDeniedException } from '../exception/access_denied';
 import { Album } from './entities/album.entity';
 import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { EntityNotFoundError } from 'typeorm';
-import {JwtAuthenticationGuard} from "../auth/guard/jwt-authentication.guard";
+import { JwtAuthenticationGuard } from '../auth/guard/jwt-authentication.guard';
 
 @Controller('album')
 @ApiTags('Album')

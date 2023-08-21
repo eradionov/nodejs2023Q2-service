@@ -13,7 +13,8 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
-  Put, UseGuards,
+  Put,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { UserService } from './user.service';

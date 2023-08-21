@@ -14,7 +14,8 @@ import {
   ParseUUIDPipe,
   NotFoundException,
   Put,
-  ForbiddenException, UseGuards,
+  ForbiddenException,
+  UseGuards,
 } from '@nestjs/common';
 import { ArtistService } from './artist.service';
 import { CreateArtistDto } from './dto/create-artist.dto';
@@ -24,7 +25,7 @@ import { AccessDeniedException } from '../exception/access_denied';
 import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Artist } from './entities/artist.entity';
 import { EntityNotFoundError } from 'typeorm';
-import {JwtAuthenticationGuard} from "../auth/guard/jwt-authentication.guard";
+import { JwtAuthenticationGuard } from '../auth/guard/jwt-authentication.guard';
 
 @Controller('artist')
 @ApiTags('Artist')

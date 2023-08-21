@@ -1,10 +1,10 @@
-import {Injectable, UseGuards, Request} from '@nestjs/common';
+import { Injectable, UseGuards } from '@nestjs/common';
 import { UserService } from '../user/user.service';
 import { compare } from 'bcrypt';
 import { User } from '../user/entities/user.entity';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import {LocalAuthenticationGuard} from "./guard/local-authentication.guard";
+import { LocalAuthenticationGuard } from './guard/local-authentication.guard';
 
 @Injectable()
 export class AuthService {

@@ -11,16 +11,16 @@ import {
   ClassSerializerInterceptor,
   NotFoundException,
   InternalServerErrorException,
-  UnprocessableEntityException, UseGuards,
+  UnprocessableEntityException,
+  UseGuards,
 } from '@nestjs/common';
 import { FavoriteService } from './favorite.service';
-import { EntityNotExistsException } from '../exception/entity_not_exists';
 import { Artist } from '../artist/entities/artist.entity';
 import { Album } from '../album/entities/album.entity';
 import { Track } from '../track/entities/track.entity';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { EntityNotFoundError } from 'typeorm';
-import {JwtAuthenticationGuard} from "../auth/guard/jwt-authentication.guard";
+import { JwtAuthenticationGuard } from '../auth/guard/jwt-authentication.guard';
 
 @Controller('favs')
 @ApiTags('Favorits')
