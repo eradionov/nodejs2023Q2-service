@@ -11,7 +11,7 @@ import {
   ClassSerializerInterceptor,
   NotFoundException,
   InternalServerErrorException,
-  UnprocessableEntityException,
+  UnprocessableEntityException, UseGuards,
 } from '@nestjs/common';
 import { FavoriteService } from './favorite.service';
 import { EntityNotExistsException } from '../exception/entity_not_exists';
@@ -20,12 +20,14 @@ import { Album } from '../album/entities/album.entity';
 import { Track } from '../track/entities/track.entity';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { EntityNotFoundError } from 'typeorm';
+import {JwtAuthenticationGuard} from "../auth/guard/jwt-authentication.guard";
 
 @Controller('favs')
 @ApiTags('Favorits')
 export class FavoriteController {
   constructor(private readonly favoriteService: FavoriteService) {}
 
+  @UseGuards(JwtAuthenticationGuard)
   @Get()
   @HttpCode(HttpStatus.OK)
   @ApiResponse({
@@ -37,6 +39,7 @@ export class FavoriteController {
     return await this.favoriteService.findAll();
   }
 
+  @UseGuards(JwtAuthenticationGuard)
   @Post('track/:id')
   @HttpCode(HttpStatus.CREATED)
   @ApiResponse({
@@ -56,6 +59,7 @@ export class FavoriteController {
     }
   }
 
+  @UseGuards(JwtAuthenticationGuard)
   @Post('album/:id')
   @HttpCode(HttpStatus.CREATED)
   @ApiResponse({
@@ -75,6 +79,7 @@ export class FavoriteController {
     }
   }
 
+  @UseGuards(JwtAuthenticationGuard)
   @Post('artist/:id')
   @HttpCode(HttpStatus.CREATED)
   @ApiResponse({
@@ -94,6 +99,7 @@ export class FavoriteController {
     }
   }
 
+  @UseGuards(JwtAuthenticationGuard)
   @Delete('track/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found.' })
@@ -110,6 +116,7 @@ export class FavoriteController {
     }
   }
 
+  @UseGuards(JwtAuthenticationGuard)
   @Delete('album/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found.' })
@@ -126,6 +133,7 @@ export class FavoriteController {
     }
   }
 
+  @UseGuards(JwtAuthenticationGuard)
   @Delete('artist/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found.' })

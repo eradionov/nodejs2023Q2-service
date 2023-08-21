@@ -9,6 +9,7 @@ import { FavoriteModule } from './favorite/favorite.module';
 import * as dotenv from 'dotenv';
 import { DatabaseModule } from './database/database.module';
 import { ConfigModule } from '@nestjs/config';
+import { AuthModule } from './auth/auth.module';
 
 dotenv.config();
 
@@ -21,6 +22,7 @@ dotenv.config();
     TrackModule,
     FavoriteModule,
     DatabaseModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

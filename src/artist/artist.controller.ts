@@ -14,7 +14,7 @@ import {
   ParseUUIDPipe,
   NotFoundException,
   Put,
-  ForbiddenException,
+  ForbiddenException, UseGuards,
 } from '@nestjs/common';
 import { ArtistService } from './artist.service';
 import { CreateArtistDto } from './dto/create-artist.dto';
@@ -24,12 +24,14 @@ import { AccessDeniedException } from '../exception/access_denied';
 import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Artist } from './entities/artist.entity';
 import { EntityNotFoundError } from 'typeorm';
+import {JwtAuthenticationGuard} from "../auth/guard/jwt-authentication.guard";
 
 @Controller('artist')
 @ApiTags('Artist')
 export class ArtistController {
   constructor(private readonly artistService: ArtistService) {}
 
+  @UseGuards(JwtAuthenticationGuard)
   @Post()
   @UseInterceptors(ClassSerializerInterceptor)
   @HttpCode(HttpStatus.CREATED)
@@ -50,6 +52,7 @@ export class ArtistController {
     }
   }
 
+  @UseGuards(JwtAuthenticationGuard)
   @Get()
   @HttpCode(HttpStatus.OK)
   @UseInterceptors(ClassSerializerInterceptor)
@@ -63,6 +66,7 @@ export class ArtistController {
     return await this.artistService.findAll();
   }
 
+  @UseGuards(JwtAuthenticationGuard)
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @UseInterceptors(ClassSerializerInterceptor)
@@ -83,6 +87,7 @@ export class ArtistController {
     }
   }
 
+  @UseGuards(JwtAuthenticationGuard)
   @Put(':id')
   @UseInterceptors(ClassSerializerInterceptor)
   @HttpCode(HttpStatus.OK)
@@ -111,6 +116,7 @@ export class ArtistController {
     }
   }
 
+  @UseGuards(JwtAuthenticationGuard)
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found.' })

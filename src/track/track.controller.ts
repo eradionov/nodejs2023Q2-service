@@ -17,19 +17,21 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
-  Put,
+  Put, UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { EntityExistsException } from '../exception/entity_exists';
 import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Track } from './entities/track.entity';
 import { EntityNotFoundError } from 'typeorm';
+import {JwtAuthenticationGuard} from "../auth/guard/jwt-authentication.guard";
 
 @Controller('track')
 @ApiTags('Track')
 export class TrackController {
   constructor(private readonly trackService: TrackService) {}
 
+  @UseGuards(JwtAuthenticationGuard)
   @Post()
   @UseInterceptors(ClassSerializerInterceptor)
   @HttpCode(HttpStatus.CREATED)
@@ -50,6 +52,7 @@ export class TrackController {
     }
   }
 
+  @UseGuards(JwtAuthenticationGuard)
   @Get()
   @HttpCode(HttpStatus.OK)
   @UseInterceptors(ClassSerializerInterceptor)
@@ -62,6 +65,7 @@ export class TrackController {
     return await this.trackService.findAll();
   }
 
+  @UseGuards(JwtAuthenticationGuard)
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @UseInterceptors(ClassSerializerInterceptor)
@@ -81,6 +85,7 @@ export class TrackController {
     }
   }
 
+  @UseGuards(JwtAuthenticationGuard)
   @Put(':id')
   @UseInterceptors(ClassSerializerInterceptor)
   @HttpCode(HttpStatus.OK)
@@ -113,6 +118,7 @@ export class TrackController {
     }
   }
 
+  @UseGuards(JwtAuthenticationGuard)
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found.' })

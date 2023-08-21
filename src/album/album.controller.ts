@@ -13,7 +13,7 @@ import {
   Put,
   NotFoundException,
   InternalServerErrorException,
-  ForbiddenException,
+  ForbiddenException, UseGuards,
 } from '@nestjs/common';
 import { AlbumService } from './album.service';
 import { CreateAlbumDto } from './dto/create-album.dto';
@@ -22,12 +22,14 @@ import { AccessDeniedException } from '../exception/access_denied';
 import { Album } from './entities/album.entity';
 import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { EntityNotFoundError } from 'typeorm';
+import {JwtAuthenticationGuard} from "../auth/guard/jwt-authentication.guard";
 
 @Controller('album')
 @ApiTags('Album')
 export class AlbumController {
   constructor(private readonly albumService: AlbumService) {}
 
+  @UseGuards(JwtAuthenticationGuard)
   @Post()
   @UseInterceptors(ClassSerializerInterceptor)
   @HttpCode(HttpStatus.CREATED)
@@ -48,6 +50,7 @@ export class AlbumController {
     }
   }
 
+  @UseGuards(JwtAuthenticationGuard)
   @Get()
   @HttpCode(HttpStatus.OK)
   @UseInterceptors(ClassSerializerInterceptor)
@@ -60,6 +63,7 @@ export class AlbumController {
     return await this.albumService.findAll();
   }
 
+  @UseGuards(JwtAuthenticationGuard)
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @UseInterceptors(ClassSerializerInterceptor)
@@ -82,6 +86,7 @@ export class AlbumController {
     }
   }
 
+  @UseGuards(JwtAuthenticationGuard)
   @Put(':id')
   @UseInterceptors(ClassSerializerInterceptor)
   @HttpCode(HttpStatus.OK)
@@ -110,6 +115,7 @@ export class AlbumController {
     }
   }
 
+  @UseGuards(JwtAuthenticationGuard)
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiResponse({

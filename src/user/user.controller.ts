@@ -13,7 +13,7 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
-  Put,
+  Put, UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { UserService } from './user.service';
@@ -24,12 +24,14 @@ import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { User } from './entities/user.entity';
 import { EntityNotFoundError } from 'typeorm';
 import { EntityExistsException } from '../exception/entity_exists';
+import { JwtAuthenticationGuard } from '../auth/guard/jwt-authentication.guard';
 
 @Controller('user')
 @ApiTags('User')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  @UseGuards(JwtAuthenticationGuard)
   @Post()
   @UseInterceptors(ClassSerializerInterceptor)
   @HttpCode(HttpStatus.CREATED)
@@ -50,6 +52,7 @@ export class UserController {
     }
   }
 
+  @UseGuards(JwtAuthenticationGuard)
   @Get()
   @HttpCode(HttpStatus.OK)
   @UseInterceptors(ClassSerializerInterceptor)
@@ -66,6 +69,7 @@ export class UserController {
     }
   }
 
+  @UseGuards(JwtAuthenticationGuard)
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @UseInterceptors(ClassSerializerInterceptor)
@@ -91,6 +95,7 @@ export class UserController {
     }
   }
 
+  @UseGuards(JwtAuthenticationGuard)
   @Put(':id')
   @UseInterceptors(ClassSerializerInterceptor)
   @HttpCode(HttpStatus.OK)
@@ -122,6 +127,7 @@ export class UserController {
     }
   }
 
+  @UseGuards(JwtAuthenticationGuard)
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found.' })

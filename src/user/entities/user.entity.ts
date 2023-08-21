@@ -1,5 +1,4 @@
 import { Exclude, Expose } from 'class-transformer';
-import { UpdateUserDto } from '../dto/update-user.dto';
 import { ApiProperty } from '@nestjs/swagger';
 import {
   Column,
@@ -26,6 +25,10 @@ export class User {
   @Exclude()
   password: string;
 
+  @Exclude()
+  @Column('varchar', { nullable: true, default: null, length: 512 })
+  refreshToken: string | null;
+
   @VersionColumn()
   @Expose({ name: 'version' })
   @ApiProperty({ name: 'version' })
@@ -46,8 +49,8 @@ export class User {
     this.password = password;
   }
 
-  update(dto: UpdateUserDto) {
-    this.password = dto.newPassword;
+  update(password: string) {
+    this.password = password;
 
     return this;
   }
